@@ -10,7 +10,9 @@ export interface TokenRequestJson {
     refresh_token?: string;
     redirect_uri: string;
     client_id: string;
+    client_secret?: string;
     extras?: StringMap;
+    requestTokenExtras?: StringMap;
 }
 /**
  * Represents an Access Token request.
@@ -19,15 +21,18 @@ export interface TokenRequestJson {
  */
 export declare class TokenRequest {
     clientId: string;
+    client_secret?: string;
     redirectUri: string;
     grantType: string;
     code: string | undefined;
     refreshToken: string | undefined;
     extras: StringMap | undefined;
+    requestTokenExtras: StringMap | undefined;
     constructor(request: TokenRequestJson);
     /**
      * Serializes a TokenRequest to a JavaScript object.
      */
     toJson(): TokenRequestJson;
     toStringMap(): StringMap;
+    private mergeExtras;
 }

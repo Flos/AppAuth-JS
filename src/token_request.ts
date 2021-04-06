@@ -25,7 +25,9 @@ export interface TokenRequestJson {
   code?: string;
   refresh_token?: string, redirect_uri: string;
   client_id: string;
+  client_secret?: string;
   extras?: StringMap;
+  requestTokenExtras?: StringMap;
 }
 
 
@@ -36,11 +38,13 @@ export interface TokenRequestJson {
  */
 export class TokenRequest {
   clientId: string;
+  client_secret?: string;
   redirectUri: string;
   grantType: string;
   code: string|undefined;
   refreshToken: string|undefined;
-  extras: StringMap|undefined
+  extras: StringMap|undefined;
+  requestTokenExtras: StringMap|undefined;  //  Google needs client_secret just in the token request
 
   constructor(request: TokenRequestJson) {
     this.clientId = request.client_id;
@@ -49,6 +53,8 @@ export class TokenRequest {
     this.code = request.code;
     this.refreshToken = request.refresh_token;
     this.extras = request.extras;
+    this.requestTokenExtras = request.requestTokenExtras;
+    this.client_secret = request.client_secret;
   }
 
   /**
@@ -61,7 +67,9 @@ export class TokenRequest {
       refresh_token: this.refreshToken,
       redirect_uri: this.redirectUri,
       client_id: this.clientId,
-      extras: this.extras
+      client_secret: this.client_secret,
+      extras: this.extras,
+      requestTokenExtras: this.requestTokenExtras
     };
   }
 
@@ -69,7 +77,7 @@ export class TokenRequest {
     let map: StringMap = {
       grant_type: this.grantType,
       client_id: this.clientId,
-      redirect_uri: this.redirectUri
+      redirect_uri: this.redirectUri,
     };
 
     if (this.code) {
@@ -81,14 +89,20 @@ export class TokenRequest {
     }
 
     // copy over extras
-    if (this.extras) {
-      for (let extra in this.extras) {
-        if (this.extras.hasOwnProperty(extra) && !map.hasOwnProperty(extra)) {
+    this.mergeExtras(map, this.extras);
+    this.mergeExtras(map, this.requestTokenExtras);
+
+    return map;
+  }
+
+  private mergeExtras(map: StringMap, extras?: StringMap) {
+    if (extras) {
+      for (let extra in extras) {
+        if (extras.hasOwnProperty(extra) && !map.hasOwnProperty(extra)) {
           // check before inserting to requestMap
-          map[extra] = this.extras[extra];
+          map[extra] = extras[extra];
         }
       }
     }
-    return map;
   }
 }
